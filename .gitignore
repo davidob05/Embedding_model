@@ -205,3 +205,15 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Data & outputs
+out/
+models/indexes/*.pt
+*.csv
+
+# Caches
+~/.cache/
+.cache/
+hub/
+torch_cache/

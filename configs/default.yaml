@@ -1,0 +1,16 @@
+paths:
+  raw: data/raw
+  out: out
+  gallery: out/eval/gallery
+  probe: out/eval/probe
+  index: models/indexes/dino_resnet_prototypes.pt
+
+eval:
+  backbone: both        # dinov2 | resnet50 | both
+  dino_model: dinov2_vits14
+  dino_image_size: 518
+  resnet_image_size: 448
+  tta: 4
+  hflip: true
+  topk: 5
+  alpha: 0.6           
