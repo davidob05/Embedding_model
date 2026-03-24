@@ -55,9 +55,9 @@ def letterbox_to_square(pil_img: Image.Image, size: int, pad_value: int = 128) -
     canvas.paste(img, (x, y))
     return canvas
 
-def make_edge_image(pil_img: Image.Image, size: int, square_mode: str = "pad") -> Image.Image:
+def make_edge_image(pil_img: Image.Image, size: int, square_mode: str = "pad", min_contour_len: int = 500) -> Image.Image:
     """Convert to edge-only 3-channel PIL image suitable for ImageNet-pretrained nets.
-    Steps: grayscale -> CLAHE -> GaussianBlur -> Canny -> dilate -> invert -> letterbox/center-crop.
+    Steps: grayscale -> CLAHE -> GaussianBlur -> Canny -> dilate -> filter short contours -> invert -> letterbox/center-crop.
     """
     img = np.array(pil_img.convert("RGB"))
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -71,6 +71,12 @@ def make_edge_image(pil_img: Image.Image, size: int, square_mode: str = "pad") -
     edges = cv2.Canny(gray, lower, upper)
     # thicken slightly to reduce fragmentation
     edges = cv2.dilate(edges, np.ones((2, 2), np.uint8), iterations=1)
+    # remove short contours (noise, wave fragments)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    edges = np.zeros_like(edges)
+    for c in contours:
+        if cv2.arcLength(c, False) >= min_contour_len:
+            cv2.drawContours(edges, [c], -1, 255, 1)
     # invert so fin edges are bright
     edge_rgb = cv2.cvtColor(255 - edges, cv2.COLOR_GRAY2RGB)
     edge_pil = Image.fromarray(edge_rgb)
